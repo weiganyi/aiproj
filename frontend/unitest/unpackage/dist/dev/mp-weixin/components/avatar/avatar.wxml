@@ -1,0 +1,1 @@
+<view class="avatar data-v-90b30c66" style="{{h}}"><image wx:if="{{a}}" binderror="{{b}}" style="{{c}}" class="avatar__img data-v-90b30c66" src="{{d}}" mode="{{e}}"></image><text wx:elif="{{f}}" class="avatar__text data-v-90b30c66" style="{{'font-size:' + '38rpx'}}">{{g}}</text></view>
