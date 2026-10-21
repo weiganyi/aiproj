@@ -1,7 +1,0 @@
-{
-  "navigationBarTitleText": "page01",
-  "enablePullDownRefresh": false,
-  "usingComponents": {
-    "avatar": "../../components/avatar/avatar"
-  }
-}
