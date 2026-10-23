@@ -87,7 +87,7 @@ func initHTTPClient() error {
 //	             为空时回退到自动访问雪球首页获取 Cookie 的旧逻辑
 //
 // 返回: 股价字符串
-func GetWebValFromKey(stockCode, cookie string) (string, error) {
+func GetWebValFromKey(sec int, stockCode, cookie string) (string, error) {
 	cookie = strings.TrimSpace(cookie)
 
 	// 选择使用的 http client：显式传入 cookie 时用不带 jar 的 client，
@@ -130,8 +130,8 @@ func GetWebValFromKey(stockCode, cookie string) (string, error) {
 	}
 
 	// fmt.Println("API 响应:", string(body))
-	// 成功获取响应后延时 1 秒，避免请求过于频繁被雪球限流
-	time.Sleep(1 * time.Second)
+	// 成功获取响应后延时 3 秒，避免请求过于频繁被雪球限流
+	time.Sleep(time.Second * time.Duration(sec))
 
 	// 使用正则匹配 JSON 中的 "current" 字段值
 	// API 返回格式类似：{"data":{"quote":{"current":448.0,...}},...}
@@ -153,7 +153,7 @@ func truncateString(s string, max int) string {
 // UptXlsStockPrice 读取指定的 xlsx 文件，找到"代码"这一列，
 // 依次调用 GetWebValFromKey 获取股价，并把股价更新到对应行的"股价"列单元格
 // cookie 为可选参数，传入后会原样带给雪球接口；不传则自动获取 Cookie
-func UptXlsStockPrice(xlsxFile string, cookie ...string) error {
+func UptXlsStockPrice(sec int, xlsxFile string, cookie ...string) error {
 	ck := ""
 	if len(cookie) > 0 {
 		ck = cookie[0]
@@ -208,7 +208,7 @@ func UptXlsStockPrice(xlsxFile string, cookie ...string) error {
 			continue
 		}
 
-		price, err := GetWebValFromKey(code, ck)
+		price, err := GetWebValFromKey(sec, code, ck)
 		if err != nil {
 			fmt.Printf("code:%s, ck:%s, 获取失败 (%v)\n", code, ck, err)
 			continue

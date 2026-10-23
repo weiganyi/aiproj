@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
 func main() {
@@ -14,16 +15,20 @@ func main() {
 
 	switch os.Args[1] {
 	case "uxls":
-		if len(os.Args) < 3 {
-			fmt.Println("用法: toolbox uxls <xls文件路径> [cookie]")
+		if len(os.Args) < 4 {
+			fmt.Println("用法: toolbox uxls sec <xls文件路径> [cookie]")
 			return
 		}
-		xlsxFile := os.Args[2]
-		cookie := ""
-		if len(os.Args) > 3 {
-			cookie = os.Args[3]
+		sec, err := strconv.Atoi(os.Args[2])
+		if err != nil {
+			fmt.Println("入参错误，sec:", sec)
 		}
-		if err := UptXlsStockPrice(xlsxFile, cookie); err != nil {
+		xlsxFile := os.Args[3]
+		cookie := ""
+		if len(os.Args) > 4 {
+			cookie = os.Args[4]
+		}
+		if err := UptXlsStockPrice(sec, xlsxFile, cookie); err != nil {
 			fmt.Println("UptXlsStockPrice 执行失败:", err)
 		}
 	default:

@@ -1,6 +1,7 @@
 @echo off
 chcp 65001 >nul
-E:\download\toolbox.exe uxls "E:\download\持仓比例.xlsx"
-E:\download\toolbox.exe uxls "E:\download\股票pre估值.xlsx"
-E:\download\toolbox.exe uxls "E:\download\股票扣非ttm估值.xlsx"
+set "cookie=cookiesu=761765881514141; device_id=25f912c105eb40e0db830db921d4b176; HMACCOUNT=696D8E4A1D8FB94F; s=ay18i5sbfu; bid=3784586823c7e95332b4cdc396d45215_mja7wsz1; xq_is_login=1; u=3156725827; smidV2=202609212103540bf5f05ef1552c7a6575c90026673617003cc37d942f349f0; __utmc=1; __utmz=1.1790231236.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); Hm_lvt_1db88642e346389874251b5a1eded6e3=1792112876; xq_a_token=2c46126b1891b65c4ae094157cc9b87de87c3e03; xqat=2c46126b1891b65c4ae094157cc9b87de87c3e03; xq_id_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1aWQiOjMxNTY3MjU4MjcsImlzcyI6InVjIiwiZXhwIjoxNzk1MjY4NzM5LCJjdG0iOjE3OTI2NzY3Mzk5NTksImNpZCI6ImQ5ZDBuNEFadXAifQ.fDkO6ZRfj_OmEM9pSVMikD9wdhA8uLXzvXZEIG_TMfjMbGFBv71KC51f1qtGMUo4_67ukt-56NibkVTLsmV9w53G2zmVfPphyg0npFupgJM74gc01EXVVsAsjui55Yy0fIfkywUv81l_8h7yU9NdhjPoGIsq4-hPC-DkAZE07skgMszA9O9knNBdPB78n-RxlyhkgsxhI4erv1W3vpmlo0AVH0LFN3jVSjMjmpGiAaTRUQVJSoD--XJyPQmgjRGyuYEcGp_1JyRvLk8CqvWHE8HyYoZyn8SBPBGybVlRJx4MS6JGJ8J8ykGXpaWz3mIJMQ1wLBResACvuPxR5GsjNw; xq_r_token=c86b478a9e0986b3eb117c24130754d00022f4f4; __utma=1.1746680653.1790231236.1792565243.1792715738.11; Hm_lpvt_1db88642e346389874251b5a1eded6e3=1792717249; .thumbcache_f24b8bbe5a5934237bbc0eda20c1b6e7=AY4FO2yv5lcHHD9lL2BA5VBAXlMWI6oq2uUDwqKWWY87TFAvyENWlLwhl+V4pOlnaHhyS3UK/UOkDSMpTVQMqg%3D%3D"
+E:\download\toolbox.exe uxls 3 "E:\download\持仓比例.xlsx" "%cookie%"
+E:\download\toolbox.exe uxls 3 "E:\download\股票pre估值.xlsx" "%cookie%"
+E:\download\toolbox.exe uxls 3 "E:\download\股票扣非ttm估值.xlsx" "%cookie%"
 pause
