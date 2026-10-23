@@ -15,11 +15,15 @@ func main() {
 	switch os.Args[1] {
 	case "uxls":
 		if len(os.Args) < 3 {
-			fmt.Println("用法: toolbox uxls <xls文件路径>")
+			fmt.Println("用法: toolbox uxls <xls文件路径> [cookie]")
 			return
 		}
 		xlsxFile := os.Args[2]
-		if err := UptXlsStockPrice(xlsxFile); err != nil {
+		cookie := ""
+		if len(os.Args) > 3 {
+			cookie = os.Args[3]
+		}
+		if err := UptXlsStockPrice(xlsxFile, cookie); err != nil {
 			fmt.Println("UptXlsStockPrice 执行失败:", err)
 		}
 	default:

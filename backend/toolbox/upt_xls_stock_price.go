@@ -15,8 +15,22 @@ import (
 // 全局共享的 http client（带 Cookie Jar），避免每次都重新获取 Cookie
 var (
 	httpClient *http.Client
-	userAgent  = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+	// plainHTTPClient 不带 CookieJar，用于调用方显式传入 cookie 的场景，
+	// 避免 jar 中的 cookie 与手动设置的 Cookie 头重复叠加
+	plainHTTPClient *http.Client
+	userAgent       = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 )
+
+// getPlainHTTPClient 返回一个不带 CookieJar 的共享 http client
+func getPlainHTTPClient() *http.Client {
+	if plainHTTPClient == nil {
+		plainHTTPClient = &http.Client{
+			Timeout:   30 * time.Second,
+			Transport: &http.Transport{TLSHandshakeTimeout: 10 * time.Second},
+		}
+	}
+	return plainHTTPClient
+}
 
 // initHTTPClient 初始化 http client，并访问雪球首页获取必要的 Cookie
 func initHTTPClient() error {
@@ -67,24 +81,44 @@ func initHTTPClient() error {
 }
 
 // GetWebValFromKey 根据股票代码从雪球网站获取当前股价
-// 入参: 股票代码 (如 "00700" 不带市场前缀)
+// 入参: stockCode 股票代码 (如 "00700" 不带市场前缀)
+//
+//	cookie     调用方提供的 Cookie 字符串（形如 "xq_a_token=xxx; u=yyy"），
+//	             为空时回退到自动访问雪球首页获取 Cookie 的旧逻辑
+//
 // 返回: 股价字符串
-func GetWebValFromKey(stockCode string) (string, error) {
-	if err := initHTTPClient(); err != nil {
-		return "", err
+func GetWebValFromKey(stockCode, cookie string) (string, error) {
+	cookie = strings.TrimSpace(cookie)
+
+	// 选择使用的 http client：显式传入 cookie 时用不带 jar 的 client，
+	// 否则沿用自动获取 Cookie 的共享 client
+	var client *http.Client
+	if cookie != "" {
+		client = getPlainHTTPClient()
+	} else {
+		if err := initHTTPClient(); err != nil {
+			return "", err
+		}
+		client = httpClient
 	}
 
 	// 使用雪球实时行情 JSON API（不是 HTML 页面）
 	targetURL := fmt.Sprintf("https://stock.xueqiu.com/v5/stock/quote.json?symbol=%s&extend=detail", stockCode)
 
-	req, _ := http.NewRequest("GET", targetURL, nil)
+	req, err := http.NewRequest("GET", targetURL, nil)
+	if err != nil {
+		return "", fmt.Errorf("构造请求失败: %w", err)
+	}
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Referer", "https://xueqiu.com/S/"+stockCode)
 	req.Header.Set("Accept", "application/json, text/plain, */*")
 	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8")
 	req.Header.Set("Origin", "https://xueqiu.com")
+	if cookie != "" {
+		req.Header.Set("Cookie", cookie)
+	}
 
-	resp, err := httpClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("请求失败: %w", err)
 	}
@@ -118,7 +152,13 @@ func truncateString(s string, max int) string {
 
 // UptXlsStockPrice 读取指定的 xlsx 文件，找到"代码"这一列，
 // 依次调用 GetWebValFromKey 获取股价，并把股价更新到对应行的"股价"列单元格
-func UptXlsStockPrice(xlsxFile string) error {
+// cookie 为可选参数，传入后会原样带给雪球接口；不传则自动获取 Cookie
+func UptXlsStockPrice(xlsxFile string, cookie ...string) error {
+	ck := ""
+	if len(cookie) > 0 {
+		ck = cookie[0]
+	}
+
 	f, err := excelize.OpenFile(xlsxFile)
 	if err != nil {
 		return fmt.Errorf("打开文件 %s 失败: %w", xlsxFile, err)
@@ -168,9 +208,9 @@ func UptXlsStockPrice(xlsxFile string) error {
 			continue
 		}
 
-		price, err := GetWebValFromKey(code)
+		price, err := GetWebValFromKey(code, ck)
 		if err != nil {
-			fmt.Printf("%s：获取失败 (%v)\n", code, err)
+			fmt.Printf("code:%s, ck:%s, 获取失败 (%v)\n", code, ck, err)
 			continue
 		}
 		fmt.Printf("%s：%s\n", code, price)
@@ -244,5 +284,3 @@ func UptXlsStockPrice(xlsxFile string) error {
 	}
 	return nil
 }
-
-var _ = strings.TrimSpace
