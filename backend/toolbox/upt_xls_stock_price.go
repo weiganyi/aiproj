@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -179,15 +180,18 @@ func UptXlsStockPrice(sec int, xlsxFile string, cookie ...string) error {
 		return fmt.Errorf("工作表为空")
 	}
 
-	// 在表头中查找"代码"列和"股价"列
+	// 在表头中查找"代码"列和"股价"列和"持仓"列
 	codeColIdx := -1
 	priceColIdx := -1
+	positionColIdx := -1
 	for i, cell := range rows[0] {
 		switch cell {
 		case "代码":
 			codeColIdx = i
 		case "股价":
 			priceColIdx = i
+		case "持仓":
+			positionColIdx = i
 		}
 	}
 	if codeColIdx == -1 {
@@ -200,12 +204,20 @@ func UptXlsStockPrice(sec int, xlsxFile string, cookie ...string) error {
 	// 从第二行开始遍历，取出"代码"列的值
 	for i := 1; i < len(rows); i++ {
 		row := rows[i]
-		if codeColIdx >= len(row) {
+		if codeColIdx >= len(row) || positionColIdx >= len(row) {
 			continue
 		}
 		code := row[codeColIdx]
 		if code == "" {
 			continue
+		}
+		// 跳过持仓为0的行
+		if positionColIdx != -1 {
+			positionStr := row[positionColIdx]
+			position, err := strconv.Atoi(positionStr)
+			if err == nil && position == 0 {
+				continue
+			}
 		}
 
 		price, err := GetWebValFromKey(sec, code, ck)
