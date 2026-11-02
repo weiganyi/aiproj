@@ -15,18 +15,28 @@ func main() {
 
 	switch os.Args[1] {
 	case "uxls":
-		if len(os.Args) < 4 {
+		// 兼容两种格式: uxls sec <xls文件路径> [cookie]  和旧格式 uxls <xls文件路径> [cookie]（默认 sec=3）
+		sec := 3
+		idx := 2
+		if len(os.Args) >= 3 {
+			if s, err := strconv.Atoi(os.Args[2]); err == nil {
+				sec = s
+				idx = 3
+			}
+		} else {
+			fmt.Println("入参错误：请至少提供 xlsx 文件路径")
 			fmt.Println("用法: toolbox uxls sec <xls文件路径> [cookie]")
 			return
 		}
-		sec, err := strconv.Atoi(os.Args[2])
-		if err != nil {
-			fmt.Println("入参错误，sec:", sec)
+		if len(os.Args) <= idx {
+			fmt.Println("入参错误：请提供 xlsx 文件路径")
+			fmt.Println("用法: toolbox uxls sec <xls文件路径> [cookie]")
+			return
 		}
-		xlsxFile := os.Args[3]
+		xlsxFile := os.Args[idx]
 		cookie := ""
-		if len(os.Args) > 4 {
-			cookie = os.Args[4]
+		if len(os.Args) > idx+1 {
+			cookie = os.Args[idx+1]
 		}
 		if err := UptXlsStockPrice(sec, xlsxFile, cookie); err != nil {
 			fmt.Println("UptXlsStockPrice 执行失败:", err)
